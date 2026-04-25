@@ -1,0 +1,17 @@
+# NOTICE
+
+## Hippo Pipeline
+Copyright 2026 lawcontinue
+
+This product includes software developed at the Hippo Pipeline project
+(https://github.com/lawcontinue/hippo-pipeline).
+
+### Third-Party Dependencies
+
+| Library | License | Notes |
+|---------|---------|-------|
+| MLX | Apache 2.0 | Apple machine learning framework |
+| MLX-LM | Apache 2.0 | MLX language model utilities |
+| NumPy | BSD-3 | Numerical computing (if used) |
+
+This software is provided "as is" without warranty of any kind.

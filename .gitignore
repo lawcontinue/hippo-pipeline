@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# MLX cache
+*.safetensors
+checkpoints/
+
+# Logs and results (local only)
+results/*.log
+results/*.txt
+
+# Secrets
+.env
+*.key
+*.pem
+
+# Old monolithic file (pre-refactor)
+sharded_inference_old.py
+
+# Benchmark/dev scripts (local paths, not for release)
+*_benchmark*.py
+adapt_benchmark.py
+themis_v2v3_bench.py
+speed_bench_eval.py
+speed_bench_pipeline.py
+mtp_head_poc.py
+mtp_train.py
+mtp_train_cached.py
+soul_ensemble_v3.py
+legal_benchmark.py
+shield_benchmark.py
+shield_benchmark_v2.py
+themis_benchmark.py
+bidirectional_pipeline.py
+overlapped_pipeline.py
+continuous_batch_engine.py
+distributed_model.py
+kv_cache.py
+pipeline_layers.py
+cluster.py
+sd_draft_1b.py
+
+# Experimental code
+experiments/
+
+# Results
+results/
+*.json
+!package.json
