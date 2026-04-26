@@ -116,10 +116,9 @@ def test_sample_token_greedy():
     import mlx.core as mx
     from logits import sample_token
 
-    import numpy as np
-    arr = np.zeros((1, 1, 50), dtype=np.float32)
+    arr = mx.zeros((1, 1, 50))
     arr[0, 0, 42] = 100.0
-    logits = mx.array(arr)
+    logits = arr
     token = sample_token(logits, temperature=0.0)
     assert token == 42
 
@@ -192,14 +191,13 @@ def test_encode_decode_tensor():
 
     recovered = frame_to_mlx(frame)
     mx.eval(recovered)
-    import numpy as np
-    assert np.allclose(np.array(original), np.array(recovered), atol=1e-6)
+    # removed numpy dependency
+    assert float(mx.abs(original - recovered).max()) < 1e-5, f"float32 roundtrip error"
 
 
 def test_encode_decode_float16():
     import mlx.core as mx
     from tcp_transport import encode_tensor, decode_tensor, frame_to_mlx
-    import numpy as np
 
     original = mx.random.normal((1, 5)).astype(mx.float16)
     mx.eval(original)
@@ -209,7 +207,7 @@ def test_encode_decode_float16():
     assert frame.rank == 1
     recovered = frame_to_mlx(frame)
     mx.eval(recovered)
-    assert np.allclose(np.array(original), np.array(recovered), atol=1e-3)
+    assert float(mx.abs(original - recovered).max()) < 0.01, f"float16 roundtrip error"
 
 
 def test_tensor_frame_nbytes():
