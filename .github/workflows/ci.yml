@@ -48,7 +48,7 @@ jobs:
         with:
           python-version: "3.14"
       - name: Install MLX
-        run: pip install mlx
+        run: pip install mlx numpy
       - name: Run import tests
         run: |
           python -c "
