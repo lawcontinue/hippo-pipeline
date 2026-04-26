@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Check syntax
+        run: |
+          python -m py_compile config.py
+          python -m py_compile model_ops.py
+          python -m py_compile logits.py
+          python -m py_compile rank0.py
+          python -m py_compile rank1.py
+          python -m py_compile sharded_inference.py
+          python -m py_compile shard.py
+          python -m py_compile shard_loader.py
+          python -m py_compile tcp_transport.py
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for hardcoded IPs
+        run: |
+          # No hardcoded private IPs in Python files (only allowed in shell defaults)
+          ! grep -rn '192\.168\.\|169\.254\.\|10\.0\.0\.' config.py model_ops.py logits.py rank0.py rank1.py sharded_inference.py shard.py shard_loader.py tcp_transport.py
+
+      - name: Check for secrets
+        run: |
+          ! grep -rn 'password\|secret\|api_key\|token' --include='*.py' . || true
+          # Fail if any matches found (case-insensitive)
+          if grep -rnil 'password\|api_key\|secret_key' --include='*.py' . 2>/dev/null; then
+            echo "❌ Potential secrets found!"
+            exit 1
+          fi
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Install dependencies
+        run: pip install mlx
+      - name: Run import tests
+        run: |
+          python -c "
+          import config
+          from config import build_parser, HIDDEN_SIZE, VOCAB_SIZE
+          from model_ops import rms_norm, forward_layer
+          from logits import compress_logits_topk, sample_token
+          from rank0 import rank0_generate
+          from rank1 import rank1_serve
+          assert HIDDEN_SIZE == 3840
+          assert VOCAB_SIZE == 262208
+          print('✅ All imports and constants OK')
+          "
+      - name: Run unit tests
+        run: |
+          python -c "
+          import mlx.core as mx
+          from model_ops import rms_norm, clip_residual, get_rope
+          from logits import compress_logits_topk, sample_from_topk, sample_token
+
+          # rms_norm
+          x = mx.random.normal((1, 1, 3840))
+          out = rms_norm(x, mx.zeros((3840,)))
+          assert out.shape == (1, 1, 3840)
+
+          # compress_logits_topk
+          logits = mx.random.normal((1, 1, 262208))
+          idx, val = compress_logits_topk(logits)
+          assert idx.shape == (1, 1, 128)
+
+          # sample_token greedy
+          l = mx.zeros((1, 1, 100))
+          l[0, 0, 42] = 10.0
+          assert sample_token(l, temperature=0.0) == 42
+
+          # sample_from_topk with repetition penalty
+          idx = mx.array([[[10, 42, 30]]]).astype(mx.int32)
+          val = mx.array([[[10.0, 5.0, 1.0]]]).astype(mx.float16)
+          assert sample_from_topk(idx, val, temperature=0.0, repetition_penalty=2.0, recent_tokens=[42]) == 10
+
+          print('✅ All unit tests passed')
+          "
