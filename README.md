@@ -12,7 +12,7 @@ Runs a single LLM split across two machines — R0 handles the first half of lay
 
 | Configuration | Speed | Notes |
 |--------------|-------|-------|
-| Pipeline (RP=1.1, temp=0) | ~5.5 tok/s | Stable, high quality |
+| Pipeline (Wi-Fi, temp=0) | ~7.2 tok/s | Stable, coherent output |
 | Batch Forward (B=2) | ~13.8 tok/s seq | 1.97x throughput |
 | Single machine mlx-lm | ~28 tok/s | Baseline comparison |
 
@@ -34,12 +34,12 @@ pip install mlx==0.31.1
 
 **R1 (second half of model) — start first:**
 ```bash
-python sharded_inference.py --rank 1 --model <model-path>
+python sharded_inference.py --rank 1 --host 0.0.0.0 --port 9998
 ```
 
 **R0 (first half of model + generation):**
 ```bash
-python sharded_inference.py --rank 0 --model <model-path> --prompt "Hello, world!"
+python sharded_inference.py --rank 0 --host <R1_IP> --port 9998 --prompt "Hello, world!"
 ```
 
 ### Benchmark

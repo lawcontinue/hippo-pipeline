@@ -1,0 +1,2 @@
+run_id,mode,network,layer_split,tok_s,step_time_ms,prefill_time_s,total_time_s,tokens_generated,output_text,timestamp
+1,dual,thunderbolt,25/23,8.1,121.0,15.4,25.0,20,test,2026-04-21T10:00:00
